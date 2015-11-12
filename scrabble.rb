@@ -1,6 +1,6 @@
 module ScrabbleLibrary
 
-	# empty_board is represented by a hash pointing from index to contents
+	# empty_board is represented by a hash pointing from location to contents
 	def ScrabbleLibrary.get_empty_board(game_state)
 		(0..224).each {|i| game_state[i.to_s.to_sym] = " "}
 		return game_state
@@ -8,13 +8,27 @@ module ScrabbleLibrary
 
 	# Create set of arrays in which numbers map to board rows and columns
 	# This should be useful when checking rows and columns for only valid words
-	def ScrabbleLibrary.get_index_arrays
-		@@column_indeces = (0..14).to_a.collect {|c| (0..224).to_a.select {|n| n % 15 == c }}
-		@@row_indeces = @@column_indeces[0].collect {|r| (r..(r + 14)).to_a}.to_a
+	def ScrabbleLibrary.get_key_arrays
+		@@column_keys = (0..14).to_a.collect {|c| (0..224).to_a.select {|n| n % 15 == c }}
+		@@row_keys = @@column_keys[0].collect {|r| (r..(r + 14)).to_a}.to_a
 
-		return @@column_indeces, @@row_indeces
+		return @@column_keys, @@row_keys
 	end
 
+	def ScrabbleLibrary.alphanumeric_to_key(alphanumeric_input)
+		alphanumeric_array = []
+		(1..15).each {|number| ('A'..'O').each {|letter| alphanumeric_array << letter + number.to_s}}
+
+		alphanumeric_conversion = {}
+		alphanumeric_array.each do |index|
+			first_number = index.index(/\d/)
+			alpha = index[0..first_number -1].ord - 64 # char offset
+			numeric = index[first_number..-1].to_i
+			alphanumeric_conversion[index] = (alpha * numeric) - 1 # set to 0th index
+		end
+
+		alphanumeric_conversion[alphanumeric_input.to_sym]
+	end
 end
 
 class ScrabbleSet
@@ -24,9 +38,11 @@ class ScrabbleSet
 		@game_state = {}
 		ScrabbleLibrary.get_empty_board(@game_state)
 
-		index_arrays = ScrabbleLibrary.get_index_arrays
-		@column_indeces = index_arrays[0]
-		@row_indeces = index_arrays[1]
+		key_arrays = ScrabbleLibrary.get_key_arrays
+		@column_keys = key_arrays[0]
+		@row_keys = key_arrays[1]
+
+		ScrabbleLibrary.alphanumeric_to_key('A1')
 	end
 
 	def to_s
@@ -52,4 +68,4 @@ class ScrabbleSet
 end
 
 game = ScrabbleSet.new
-puts game.to_s
+# puts game.to_s
