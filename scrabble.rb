@@ -1,3 +1,4 @@
+# A set of methods and variables helpful for Scrabble board indexing
 module ScrabbleLibrary
 
 	# empty_board is represented by a hash pointing from location to contents
@@ -15,22 +16,29 @@ module ScrabbleLibrary
 		return @@column_keys, @@row_keys
 	end
 
+	# Offers a conversion between alphanumeric grid (A1...O15) visible to
+	# the user and numeric index (0 - 224) familiar to game state.
 	def ScrabbleLibrary.alphanumeric_to_key(alphanumeric_input)
 		alphanumeric_array = []
 		(1..15).each {|number| ('A'..'O').each {|letter| alphanumeric_array << letter + number.to_s}}
 
 		alphanumeric_conversion = {}
-		alphanumeric_array.each do |index|
-			first_number = index.index(/\d/)
-			alpha = index[0..first_number -1].ord - 64 # char offset
-			numeric = index[first_number..-1].to_i
-			alphanumeric_conversion[index] = (alpha * numeric) - 1 # set to 0th index
+		alphanumeric_array.each_with_index do |alphanumeric_location, i|
+			first_number = alphanumeric_location.index(/\d/)
+
+			# Subtract char offset to get 1..15
+			alpha = alphanumeric_location[0..first_number - 1].ord - 64
+			numeric = alphanumeric_location[first_number..-1].to_i
+
+			# Revisit for cleanliness
+			alphanumeric_conversion[alphanumeric_location] = (alpha - 1) + (15 * (numeric - 1))
 		end
 
-		alphanumeric_conversion[alphanumeric_input.to_sym]
+		alphanumeric_conversion[alphanumeric_input]
 	end
 end
 
+# Individual Scrabble game. Contains game state, game play, players.
 class ScrabbleSet
 	include ScrabbleLibrary
 
@@ -41,8 +49,6 @@ class ScrabbleSet
 		key_arrays = ScrabbleLibrary.get_key_arrays
 		@column_keys = key_arrays[0]
 		@row_keys = key_arrays[1]
-
-		ScrabbleLibrary.alphanumeric_to_key('A1')
 	end
 
 	def to_s
@@ -57,7 +63,7 @@ class ScrabbleSet
 				state = state + " " if row_number.length == 1
 			end
 
-			state = state + "[ " + value + " ]"
+			state = state + "[ " + value.to_s + " ]"
 
 			if (index + 1) % 15 == 0
 				state = state + "\n\n"
@@ -65,7 +71,31 @@ class ScrabbleSet
 		end
 		state
 	end
+
+	# Given a starting position, direction ("south"/"east"), and word, sets the tiles
+	# on the board using column/row index arrays. No validation included at this time.
+	def set_tiles(starting_index, direction, word)
+		starting_key = ScrabbleLibrary.alphanumeric_to_key(starting_index)
+
+		direction_array = (direction.downcase == "south" ? @column_keys : @row_keys)
+
+		word_position = []
+
+		direction_array.each do |line|
+			if line.any? {|key| key == starting_key}
+				position_in_line = line.index(starting_key)
+				word_position = line[position_in_line..(position_in_line + word.length - 1)]
+			end
+		end
+			
+		word_position.each_with_index do |key, index|
+			puts index
+			@game_state[key.to_s.to_sym] = word.split("")[index]
+		end
+	end
 end
 
+# Arbitrary tests here
 game = ScrabbleSet.new
-# puts game.to_s
+game.set_tiles("C7", "south", "bullfrog")
+puts game.to_s
