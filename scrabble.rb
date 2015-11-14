@@ -37,6 +37,7 @@ module ScrabbleLibrary
   end
 
   def ScrabbleLibrary.valid_move?(game_state, word_position, word)
+    is_valid = true
 
     # Create hypothetical game_state
     test_state = game_state.clone()
@@ -46,24 +47,54 @@ module ScrabbleLibrary
 
     word_hash_array = []
 
-    # Iterate through each column, taking indeces corresponding to straight lines
-    # to find all words with length >= 2. We'll later use the collection of hashes
-    # of words on the board to test for intersections.
-    @@column_keys.each do |column|
-      column_string = ""
-      column.each {|letter| column_string << test_state[letter.to_s.to_sym]}
+    # Iterate through each column and row, taking indeces corresponding to straight
+    # lines to find all words with length >= 2. We'll later use the collection of
+    # hashes of words on the board to test for intersections.
+    [@@column_keys, @@row_keys].each do |line_keys|
+      line_keys.each do |line|
+        # Build an array of hashes, representing a list of individual words that
+        # appear in the same line. Hashes map from keys to key contents.
+        line_word_hash_array = []
 
-      column_word_hash = {}
-      column_string.split("").each_with_index do |letter, index|
-        column_word_hash[column[index]] = letter unless letter == " "
+        line.each do |key, index|
+          test_state[key] !=
+        end
+        
+        # line_string = ""
+        # line.each {|letter| line_string << test_state[letter.to_s.to_sym]}
+
+
+
+
+        # line_string.split("").each_with_index do |letter, index|
+        #   line_word_hash[line[index]] = letter unless letter == " "
+        # end
+
+        # word_hash_array << line_word_hash unless line_word_hash.length < 2
+
       end
-
-      word_hash_array << column_word_hash unless column_word_hash.length < 2
     end
 
     puts word_hash_array
 
-    true
+    # If every word has at least one index that appears in some other word, then
+    # we know that the words on the board are contiguous
+    if word_hash_array.length > 1
+      word_hash_array.each_with_index do |word_hash_outer, i|
+        word_hash_outer.each do |key|
+          word_hash_array.each_with_index do |word_hash_inner, j|
+            if (i != j and word_hash_inner.has_key?(key))
+              is_valid = false
+            end
+          end
+        end
+      end
+    end
+
+    puts "THE VALUE OF is_valid IS " + is_valid.to_s
+
+
+    is_valid
   end
 end
 
@@ -127,8 +158,16 @@ class ScrabbleSet
 end
 
 # Arbitrary tests here
-game = ScrabbleSet.new
-game.set_tiles("D2", "south", "ben")
-game.set_tiles("F8", "south", "what")
-game.set_tiles("B1", "south", "anaconda")
-puts game.to_s
+game_one = ScrabbleSet.new
+game_one.set_tiles("F4", "south", "potato")
+puts game_one.to_s
+game_one.set_tiles("F4", "east", "pool")
+puts game_one.to_s
+
+game_one.set_tiles("I8", "east", "bell")
+puts game_one.to_s
+
+# game_two = ScrabbleSet.new
+# game_two.set_tiles("D2", "south", "ben")
+# game_two.set_tiles("F8", "south", "what")
+# puts game_two.to_s
