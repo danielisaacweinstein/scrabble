@@ -14,12 +14,11 @@ class ScrabbleSet
 
     # @board.set_word([2,2], "south", "hi")
 
-    puts @board.is_valid_move?([0,0], "south", "hello")
     @board.set_word([0,0], "south", "hello")
-    puts @board.is_valid_move?([1,0], "south", "what")
     @board.set_word([1,0], "south", "what")
-    puts @board.is_valid_move?([1,1], "east", "hat")
     @board.set_word([1,1], "east", "hat")
+    @board.set_word([1,1], "east", "bla")
+    @board.set_word([4,0], "south", "werty")
     #puts @board.is_valid_move?([3,3], "south", "hihihihi")
 
   end

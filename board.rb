@@ -21,7 +21,24 @@ class Board
     grid_string
   end
 
+  def dup_grid
+    grid_copy = Array.new(@board_size) {
+      Array.new(@board_size) { TileSpace.new(" ") }
+    }
+
+    (0..@board_size - 1).each do |i|
+      (0..@board_size - 1).each do |j|
+        puts grid_copy[j][i].class
+        grid_copy[j][i].contents = @tile_grid[j][i].contents
+      end
+    end
+
+    grid_copy
+  end
+
   def is_valid_move?(starting_index, direction, word)
+    test_grid = dup_grid
+
     is_valid = true
     starting_x = starting_index[0]
     starting_y = starting_index[1]
@@ -35,11 +52,32 @@ class Board
 
     # Doesn't disagree with contents of current tile_spaces
     word.split("").each_with_index do |letter, index|
-      relative_tile = (direction == "east" ? @tile_grid[starting_x + index][starting_y] : @tile_grid[starting_x][starting_y + index])
+      relative_tile = (direction == "east" ? test_grid[starting_x + index][starting_y] : test_grid[starting_x][starting_y + index])
       is_valid = false unless !relative_tile.nil? and (relative_tile.contents == " " or relative_tile.contents == letter)
     end
 
-    # All words on the board are valid words
+    # All 2+ letter words on the board are valid words
+    row_list = []
+    column_list = []
+
+    (0..@board_size - 1).each do |i|
+      row_string = ""
+      column_string = ""
+      (0..@board_size - 1).each do |j|
+        column_string << test_grid[j][i].contents
+        row_string << test_grid[i][j].contents
+      end
+      row_list << row_string
+      column_list << column_string
+    end
+
+    row_words = []
+    column_words = []
+    row_list.each{ |row| row_words << row.split(" ")}
+    column_list.each{ |column| column_words << column.split(" ")}
+    
+    puts row_words.to_s
+    puts column_words.to_s
 
     return is_valid
   end
@@ -56,6 +94,10 @@ class Board
         set_tile([starting_index[0] + i, starting_index[1]], letter) if direction == "east"
         set_tile([starting_index[0], starting_index[1] + i], letter) if direction == "south"
       end
-  end
+    else
+      puts "Invalid word."
+    end
+
+
   end
 end
