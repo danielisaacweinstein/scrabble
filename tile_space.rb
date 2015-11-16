@@ -3,12 +3,9 @@ class TileSpace
     @contents = contents
   end
 
+  attr_accessor :contents
+
   def to_s
     return "[ " + @contents + " ]"
   end
-
-  def set_contents(new_contents)
-    @contents = new_contents
-  end
-
 end
