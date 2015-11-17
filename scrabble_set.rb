@@ -10,25 +10,15 @@ class ScrabbleSet
   end
 
   def play
-    # @board.set_word([0,0], "east", "hi")
-
-    # @board.set_word([2,2], "south", "hi")
-
     @board.set_word([0,0], "south", "hello")
     @board.set_word([1,0], "south", "what")
     @board.set_word([1,1], "east", "hat")
     @board.set_word([1,1], "east", "bla")
     @board.set_word([4,0], "south", "werty")
-    #puts @board.is_valid_move?([3,3], "south", "hihihihi")
-
+    @board.set_word([1,4], "east", "bot")
   end
 
 end
 
-
-puts "STARTING"
-
 s = ScrabbleSet.new
-puts s.to_s
 s.play
-puts s.to_s

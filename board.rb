@@ -9,12 +9,12 @@ class Board
     }
   end
 
-  def to_s
+  def to_s(grid = @tile_grid)
     grid_string = ""
-    @tile_grid.each_with_index do |level_from_top, t_index|
+    grid.each_with_index do |level_from_top, t_index|
       row_string = ""
       level_from_top.each_with_index do |keys_from_left, l_index|
-        row_string << @tile_grid[l_index][t_index].to_s
+        row_string << grid[l_index][t_index].to_s
       end
       grid_string << row_string + "\n\n"
     end
@@ -28,7 +28,6 @@ class Board
 
     (0..@board_size - 1).each do |i|
       (0..@board_size - 1).each do |j|
-        puts grid_copy[j][i].class
         grid_copy[j][i].contents = @tile_grid[j][i].contents
       end
     end
@@ -37,12 +36,10 @@ class Board
   end
 
   def is_valid_move?(starting_index, direction, word)
-    test_grid = dup_grid
-
+    starting_x, starting_y = starting_index[0], starting_index[1]
     is_valid = true
-    starting_x = starting_index[0]
-    starting_y = starting_index[1]
-
+    test_grid = dup_grid
+    
     # Word must be at least 2 letters
     is_valid = false if word.length < 2
 
@@ -57,6 +54,12 @@ class Board
     end
 
     # All 2+ letter words on the board are valid words
+    # TODO: DRY this up
+    word.split("").each_with_index do |letter, i|
+      set_tile(test_grid, [starting_index[0] + i, starting_index[1]], letter) if direction == "east"
+      set_tile(test_grid, [starting_index[0], starting_index[1] + i], letter) if direction == "south"
+    end
+
     row_list = []
     column_list = []
 
@@ -64,40 +67,44 @@ class Board
       row_string = ""
       column_string = ""
       (0..@board_size - 1).each do |j|
-        column_string << test_grid[j][i].contents
-        row_string << test_grid[i][j].contents
+        row_string << test_grid[j][i].contents
+        column_string << test_grid[i][j].contents
       end
       row_list << row_string
       column_list << column_string
     end
 
-    row_words = []
-    column_words = []
-    row_list.each{ |row| row_words << row.split(" ")}
-    column_list.each{ |column| column_words << column.split(" ")}
-    
-    puts row_words.to_s
-    puts column_words.to_s
+    words = []
+
+    [row_list, column_list].each do |list|
+      list.each do |line|
+        line.split(" ").each do |cluster|
+          words << cluster
+        end
+      end
+    end
 
     return is_valid
   end
 
-  def set_tile(index, contents)
+  def set_tile(grid, index, contents)
     row_index = index[0]
     column_index = index[1]
-    @tile_grid[row_index][column_index].contents = contents
+    grid[row_index][column_index].contents = contents
   end
 
-  def set_word(starting_index, direction, word) # starting_index is an array, [x axis, y axis]
+  # TODO: Might make sense to rewrite so that I can specify the grid. That way, we can use the same method
+  # for setting state on hypothetical boards as for the read board. It seems like we shouldn't _need_
+  # to depend on @tile_grid specifically in the set_word method.
+  def set_word(starting_index, direction, word)
     if is_valid_move?(starting_index, direction, word)
+      puts "VALID. starting_index: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
       word.split("").each_with_index do |letter, i|
-        set_tile([starting_index[0] + i, starting_index[1]], letter) if direction == "east"
-        set_tile([starting_index[0], starting_index[1] + i], letter) if direction == "south"
+        set_tile(@tile_grid, [starting_index[0] + i, starting_index[1]], letter) if direction == "east"
+        set_tile(@tile_grid, [starting_index[0], starting_index[1] + i], letter) if direction == "south"
       end
     else
-      puts "Invalid word."
+      puts "INVALID. starting_index: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
     end
-
-
   end
 end
