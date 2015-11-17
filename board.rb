@@ -1,14 +1,17 @@
 require_relative 'tile_space.rb'
 
 class Board
-  def initialize
-    @board_size = 10
 
+  # Initialize @board_size x @board_size grid with TileSpace objects
+  def initialize
+    @board_size = 15
     @tile_grid = Array.new(@board_size) {
       Array.new(@board_size) { TileSpace.new(" ") }
     }
   end
 
+  # Format and print either the board object by default, or another
+  # board object if specified by the caller
   def to_s(grid = @tile_grid)
     grid_string = ""
     grid.each_with_index do |level_from_top, t_index|
@@ -21,6 +24,9 @@ class Board
     grid_string
   end
 
+  # Returns a deep copy of the Board on which the method is called
+  # by creating a new grid of the same size and copying the contents
+  # from each index to the new grid's TileSpace contents.
   def dup_grid
     grid_copy = Array.new(@board_size) {
       Array.new(@board_size) { TileSpace.new(" ") }
@@ -35,6 +41,7 @@ class Board
     grid_copy
   end
 
+  # Performs series of checks to test whether the move is valid
   def is_valid_move?(starting_index, direction, word)
     starting_x, starting_y = starting_index[0], starting_index[1]
     is_valid = true
@@ -54,7 +61,6 @@ class Board
     end
 
     # All 2+ letter words on the board are valid words
-    # TODO: DRY this up
     word.split("").each_with_index do |letter, i|
       set_tile(test_grid, [starting_index[0] + i, starting_index[1]], letter) if direction == "east"
       set_tile(test_grid, [starting_index[0], starting_index[1] + i], letter) if direction == "south"
@@ -85,13 +91,13 @@ class Board
     end
 
     words.reject! {|word| word.length < 2}
-    puts words.to_s
-
     matches = []
     expression = ""
+
     words.each do |word|
       expression << "^" + word + "$" + "|"
     end
+
     expression = expression.chomp("|")
 
     open('dictionary.txt') do |file|
@@ -101,6 +107,7 @@ class Board
     matches.flatten!
     matches.each {|match| match.strip!}
 
+    # Are all of the > 2 character words on the board in the dictionary?
     words.each do |word|
       is_valid = false if !matches.include?(word)
     end
