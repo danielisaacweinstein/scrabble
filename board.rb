@@ -2,7 +2,7 @@ require_relative 'tile_space.rb'
 
 class Board
   def initialize
-    @board_size = 5
+    @board_size = 10
 
     @tile_grid = Array.new(@board_size) {
       Array.new(@board_size) { TileSpace.new(" ") }
@@ -84,6 +84,27 @@ class Board
       end
     end
 
+    words.reject! {|word| word.length < 2}
+    puts words.to_s
+
+    matches = []
+    expression = ""
+    words.each do |word|
+      expression << "^" + word + "$" + "|"
+    end
+    expression = expression.chomp("|")
+
+    open('dictionary.txt') do |file|
+      matches << file.grep(Regexp.compile(expression, "u"))
+    end
+
+    matches.flatten!
+    matches.each {|match| match.strip!}
+
+    words.each do |word|
+      is_valid = false if !matches.include?(word)
+    end
+
     return is_valid
   end
 
@@ -97,6 +118,8 @@ class Board
   # for setting state on hypothetical boards as for the read board. It seems like we shouldn't _need_
   # to depend on @tile_grid specifically in the set_word method.
   def set_word(starting_index, direction, word)
+    word = word.upcase
+
     if is_valid_move?(starting_index, direction, word)
       puts "VALID. starting_index: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
       word.split("").each_with_index do |letter, i|

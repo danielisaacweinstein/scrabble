@@ -11,11 +11,15 @@ class ScrabbleSet
 
   def play
     @board.set_word([0,0], "south", "hello")
-    @board.set_word([1,0], "south", "what")
-    @board.set_word([1,1], "east", "hat")
-    @board.set_word([1,1], "east", "bla")
-    @board.set_word([4,0], "south", "werty")
-    @board.set_word([1,4], "east", "bot")
+    @board.set_word([0,0], "east", "hello")
+    @board.set_word([3,3], "east", "fgoa")
+    puts @board.to_s
+    
+    # puts @board.to_s
+    # @board.set_word([1,1], "east", "hat")
+    # puts @board.to_s
+    # @board.set_word([1,1], "east", "bla")
+    # puts @board.to_s
   end
 
 end
