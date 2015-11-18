@@ -1,4 +1,5 @@
 require_relative 'tile_space.rb'
+require 'set'
 
 class Board
 
@@ -91,25 +92,15 @@ class Board
     end
 
     words.reject! {|word| word.length < 2}
-    matches = []
-    expression = ""
-
-    words.each do |word|
-      expression << "^" + word + "$" + "|"
-    end
-
-    expression = expression.chomp("|")
+    
+    dictionary = Set.new
 
     open('dictionary.txt') do |file|
-      matches << file.grep(Regexp.compile(expression, "u"))
+      file.each_line {|line| dictionary << line.strip!}
     end
 
-    matches.flatten!
-    matches.each {|match| match.strip!}
-
-    # Are all of the > 2 character words on the board in the dictionary?
     words.each do |word|
-      is_valid = false if !matches.include?(word)
+      is_valid = false if !dictionary.include?(word)
     end
 
     return is_valid
