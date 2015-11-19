@@ -42,26 +42,32 @@ class Board
     grid_copy
   end
 
-  # Performs series of checks to test whether the move is valid
-  def is_valid_move?(starting_index, direction, word)
+  def is_valid_length?(starting_index, direction, word)
     starting_x, starting_y = starting_index[0], starting_index[1]
     is_valid = true
-    test_grid = dup_grid
-    
-    # Word must be at least 2 letters
-    is_valid = false if word.length < 2
 
-    # Doesn't go past edge
+    if_valid = false if word.length < 2
     is_valid = false if direction == "east" and starting_index[0] + word.length > @board_size
     is_valid = false if direction == "south" and starting_index[1] + word.length > @board_size
 
-    # Doesn't disagree with contents of current tile_spaces
+    is_valid
+  end
+
+  def respects_board?(test_grid, starting_index, direction, word)
+    starting_x, starting_y = starting_index[0], starting_index[1]
+    is_valid = true
+
     word.split("").each_with_index do |letter, index|
       relative_tile = (direction == "east" ? test_grid[starting_x + index][starting_y] : test_grid[starting_x][starting_y + index])
       is_valid = false unless !relative_tile.nil? and (relative_tile.contents == " " or relative_tile.contents == letter)
     end
 
-    # All 2+ letter words on the board are valid words
+    is_valid
+  end
+
+  def all_valid_words?(test_grid, starting_index, direction, word)
+    is_valid = true
+
     word.split("").each_with_index do |letter, i|
       set_tile(test_grid, [starting_index[0] + i, starting_index[1]], letter) if direction == "east"
       set_tile(test_grid, [starting_index[0], starting_index[1] + i], letter) if direction == "south"
@@ -101,6 +107,24 @@ class Board
 
     words.each do |word|
       is_valid = false if !dictionary.include?(word)
+    end
+
+    is_valid
+  end
+
+  # Performs series of checks to test whether the move is valid
+  def is_valid_move?(starting_index, direction, word)
+    starting_x, starting_y = starting_index[0], starting_index[1]
+    is_valid = true
+    test_grid = dup_grid
+
+    # Case statement?
+    if !is_valid_length?(starting_index, direction, word)
+      is_valid = false
+    elsif !respects_board?(test_grid, starting_index, direction, word)
+      is_valid = false
+    elsif !all_valid_words?(test_grid, starting_index, direction, word)
+      is_valid = false
     end
 
     return is_valid

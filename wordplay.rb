@@ -13,6 +13,7 @@ class WordPlay
     @board.set_word([0,0], "south", "hello")
     @board.set_word([0,0], "east", "hello")
     @board.set_word([3,3], "east", "fgoa")
+    # @board.set_word([3,3], "east", "thisiswaytoolongwaaaaaaaytoooooolong")
     puts @board.to_s
   end
 
