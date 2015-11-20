@@ -3,7 +3,7 @@ require 'set'
 
 class Board
 
-  # Initialize @board_size x @board_size grid with TileSpace objects
+  # Initialize @board_size x @board_size grid with TileSpace objects.
   def initialize
     @board_size = 15
     @tile_grid = Array.new(@board_size) {
@@ -12,7 +12,7 @@ class Board
   end
 
   # Format and print either the board object by default, or another
-  # board object if specified by the caller
+  # board object if specified by the caller.
   def to_s(grid = @tile_grid)
     grid_string = ""
     grid.each_with_index do |level_from_top, t_index|
@@ -42,6 +42,8 @@ class Board
     grid_copy
   end
 
+  # Given starting index, direction, and word, checks to make sure the word
+  # is of reasonable length and doesn't extend past the boundaries of the board.
   def is_valid_length?(square_index, direction, word)
     starting_x, starting_y = square_index[0], square_index[1]
 
@@ -50,6 +52,8 @@ class Board
             (direction == "south" and square_index[1] + word.length > @board_size))
   end
 
+  # Given a board and new word, checks that new letters don't override existing
+  # contents in the spaces.
   def respects_board?(test_grid, square_index, direction, word)
     x, y = square_index[0], square_index[1]
     is_valid = true
@@ -64,6 +68,9 @@ class Board
     is_valid
   end
 
+  # Collects all words on the board, opens dictionary stream, and makes sure
+  # that all words exist in the dictionary. This includes "accidental" words
+  # created as a result of other words played on the board.
   def all_valid_words?(test_grid, starting_index, direction, word)
     is_valid = true
 
@@ -79,6 +86,7 @@ class Board
     row_list = []
     column_list = []
 
+    # Collect words in rows and columns
     (0..@board_size - 1).each do |i|
       row_string = ""
       column_string = ""
@@ -92,6 +100,7 @@ class Board
 
     words = []
 
+    # Aggregate words in single list
     [row_list, column_list].each do |list|
       list.each do |line|
         line.split(" ").each do |cluster|
@@ -115,30 +124,30 @@ class Board
     is_valid
   end
 
-  # Performs series of checks to test whether the move is valid
+  # Performs checks to test whether the move is valid and returns boolean value.
   def is_valid_move?(starting_index, direction, word)
-    starting_x, starting_y = starting_index[0], starting_index[1]
-    is_valid = true
+    starting_x, starting_y = starting_index[0], starting_index[1]    
     test_grid = dup_grid
 
-    is_valid = false if !(is_valid_length?(starting_index, direction, word) &&
-                          respects_board?(test_grid, starting_index, direction, word) &&
-                          all_valid_words?(test_grid, starting_index, direction, word))
-
-    return is_valid
+    is_valid = (is_valid_length?(starting_index, direction, word) &&
+                respects_board?(test_grid, starting_index, direction, word) &&
+                all_valid_words?(test_grid, starting_index, direction, word))
   end
 
+  # Replaces individual tile space in specified grid with new contents.
   def set_tile(grid, index, contents)
     row_index = index[0]
     column_index = index[1]
     grid[row_index][column_index].contents = contents
   end
 
+  # Given a starting index, direction, and word, replaces individual tile spaces
+  # on a grid to play a word.
   def set_word(starting_index, direction, word)
     word = word.upcase
 
     if is_valid_move?(starting_index, direction, word)
-      puts "VALID. Start: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
+      puts "VALID -- word: #{word}."
       word.split("").each_with_index do |letter, i|
         case direction
         when "east"
@@ -148,7 +157,7 @@ class Board
         end
       end
     else
-      puts "INVALID. Start: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
+      puts "INVALID. -- word: #{word}."
     end
   end
 end
