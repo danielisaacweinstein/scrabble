@@ -42,24 +42,23 @@ class Board
     grid_copy
   end
 
-  def is_valid_length?(starting_index, direction, word)
-    starting_x, starting_y = starting_index[0], starting_index[1]
-    is_valid = true
+  def is_valid_length?(square_index, direction, word)
+    starting_x, starting_y = square_index[0], square_index[1]
 
-    if_valid = false if word.length < 2
-    is_valid = false if direction == "east" and starting_index[0] + word.length > @board_size
-    is_valid = false if direction == "south" and starting_index[1] + word.length > @board_size
-
-    is_valid
+    return !(word.length < 2 and
+            (direction == "east" and square_index[0] + word.length > @board_size) and
+            (direction == "south" and square_index[1] + word.length > @board_size))
   end
 
-  def respects_board?(test_grid, starting_index, direction, word)
-    starting_x, starting_y = starting_index[0], starting_index[1]
+  def respects_board?(test_grid, square_index, direction, word)
+    x, y = square_index[0], square_index[1]
     is_valid = true
 
     word.split("").each_with_index do |letter, index|
-      relative_tile = (direction == "east" ? test_grid[starting_x + index][starting_y] : test_grid[starting_x][starting_y + index])
-      is_valid = false unless !relative_tile.nil? and (relative_tile.contents == " " or relative_tile.contents == letter)
+      relative_tile = (direction == "east" ? test_grid[x + index][y] : test_grid[x][y + index])
+      is_valid = false unless (!relative_tile.nil? and
+                               (relative_tile.contents == " " or
+                                relative_tile.contents == letter))
     end
 
     is_valid
@@ -69,8 +68,12 @@ class Board
     is_valid = true
 
     word.split("").each_with_index do |letter, i|
-      set_tile(test_grid, [starting_index[0] + i, starting_index[1]], letter) if direction == "east"
-      set_tile(test_grid, [starting_index[0], starting_index[1] + i], letter) if direction == "south"
+      case direction
+      when "east"
+        set_tile(test_grid, [starting_index[0] + i, starting_index[1]], letter)
+      when "south"
+        set_tile(test_grid, [starting_index[0], starting_index[1] + i], letter)
+      end
     end
 
     row_list = []
@@ -118,14 +121,9 @@ class Board
     is_valid = true
     test_grid = dup_grid
 
-    # Case statement?
-    if !is_valid_length?(starting_index, direction, word)
-      is_valid = false
-    elsif !respects_board?(test_grid, starting_index, direction, word)
-      is_valid = false
-    elsif !all_valid_words?(test_grid, starting_index, direction, word)
-      is_valid = false
-    end
+    is_valid = false if !(is_valid_length?(starting_index, direction, word) &&
+                          respects_board?(test_grid, starting_index, direction, word) &&
+                          all_valid_words?(test_grid, starting_index, direction, word))
 
     return is_valid
   end
@@ -136,20 +134,21 @@ class Board
     grid[row_index][column_index].contents = contents
   end
 
-  # TODO: Might make sense to rewrite so that I can specify the grid. That way, we can use the same method
-  # for setting state on hypothetical boards as for the read board. It seems like we shouldn't _need_
-  # to depend on @tile_grid specifically in the set_word method.
   def set_word(starting_index, direction, word)
     word = word.upcase
 
     if is_valid_move?(starting_index, direction, word)
-      puts "VALID. starting_index: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
+      puts "VALID. Start: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
       word.split("").each_with_index do |letter, i|
-        set_tile(@tile_grid, [starting_index[0] + i, starting_index[1]], letter) if direction == "east"
-        set_tile(@tile_grid, [starting_index[0], starting_index[1] + i], letter) if direction == "south"
+        case direction
+        when "east"
+          set_tile(@tile_grid, [starting_index[0] + i, starting_index[1]], letter)
+        when "south"
+          set_tile(@tile_grid, [starting_index[0], starting_index[1] + i], letter)
+        end
       end
     else
-      puts "INVALID. starting_index: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
+      puts "INVALID. Start: #{starting_index.to_s}, direction: #{direction}, word: #{word}."
     end
   end
 end
